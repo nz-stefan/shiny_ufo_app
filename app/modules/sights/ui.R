@@ -50,23 +50,24 @@ sightsModuleUI <- function(id) {
     material_card(
       fluidRow(
         column(
-          width = 2, 
-          switchInput(
-            ns("table_view"), 
-            label = "TABLE VIEW", 
-            onLabel = "ON", onStatus = "primary",
-            offLabel = "OFF", offStatus = "warning",
-            size = "mini")
-        ),
-        column(
           width = 10,
           awesomeRadio(
             ns("date_plot_dimension"), 
             label = "Select time dimension", 
-            choices = c("year" = "year", "month" = "month", "day of week" = "day_of_week", "hour of day" = "hour_of_day"),
+            choices = c("year" = "year", "month" = "month", "weekday" = "day_of_week", "hour" = "hour_of_day"),
             selected = "year",
             status = "success",
             inline = TRUE
+          )
+        ),
+        column(
+          width = 2, 
+          switchInput(
+            ns("table_view"), 
+            label = "TABLE", 
+            onLabel = "ON", onStatus = "primary",
+            offLabel = "OFF", offStatus = "warning",
+            size = "mini"
           ),
           style = "text-align: right;"
         ),

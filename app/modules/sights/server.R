@@ -37,9 +37,8 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
 
   output$filter_country <- renderUI({
     country_list <- d.ufo() %>% 
-      distinct(country) %>% 
-      na.omit() %>% 
-      arrange(country) %>% 
+      count(country, sort = TRUE) %>% 
+      head(n = 100) %>% 
       pull(country)
 
     pickerInput(
@@ -157,7 +156,7 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       head(n = 10)
 
     # plot chart  
-    hchart(d, "column", hcaes(x = shape, y = n)) %>% 
+    hchart(d, "bar", hcaes(x = shape, y = n)) %>% 
       hc_yAxis(title = list(text = "")) %>% 
       hc_xAxis(title = list(text = "")) %>% 
       hc_title(text = "Top 10 UFO shapes") %>% 
@@ -173,7 +172,7 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       head(n = 10)
     
     # plot chart  
-    hchart(d, "column", hcaes(x = country, y = n)) %>% 
+    hchart(d, "bar", hcaes(x = country, y = n)) %>% 
       hc_yAxis(title = list(text = "")) %>% 
       hc_xAxis(title = list(text = "")) %>% 
       hc_title(text = "Top 10 countries") %>% 
@@ -186,14 +185,15 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     # compute density
     d <- d.ufo_filtered() %>% 
       filter(duration < 3600) %>% 
-      pull(duration) %>% 
+      mutate(duration_minutes = duration / 60) %>% 
+      pull(duration_minutes) %>% 
       na.omit() %>% 
       density()
     
     # plot chart  
     hcdensity(d) %>% 
       hc_yAxis(title = list(text = "")) %>% 
-      hc_xAxis(title = list(text = "duration (in sec)")) %>% 
+      hc_xAxis(title = list(text = "minutes")) %>% 
       hc_title(text = "Distribution of sight duration") %>% 
       hc_add_theme(hc_app_theme())
   })

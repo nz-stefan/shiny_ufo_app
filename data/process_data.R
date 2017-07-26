@@ -30,10 +30,12 @@ d.ufo <- read_csv(
 d.ufo_clean <- d.ufo %>% 
   filter(!is.na(longitude) & !is.na(latitude)) %>% 
   mutate(
-    datetime = strptime(datetime, "%m/%e/%Y %H:%M") %>% as.POSIXct()
+    datetime = strptime(datetime, "%m/%e/%Y %H:%M") %>% as.POSIXct(),
+    country_extract = str_match(city, "\\(([\\w|/|\\s]+)\\)$") %>% .[,2],
+    country = ifelse(is.na(country), country_extract, country)
     # TODO: Clean up case of city and country names
-    # TODO: Country sometimes included in city name -> split
-  )
+  ) %>% 
+  select(-country_extract)
 
 
 # Add fields --------------------------------------------------------------
