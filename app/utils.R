@@ -6,10 +6,11 @@
 ###########################################################
 
 
-material_card <- function(...) {
+material_card <- function(..., header = NULL, bgcolor = "white") {
   div(
     class = "card",
-    div(class = "card-content", ..., style = "background-color: white")
+    header, 
+    div(class = "card-content", ..., style = sprintf("background-color: %s", bgcolor))
   )
 }
 
