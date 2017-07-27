@@ -26,7 +26,8 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     d.ufo() %>% 
       filter(
         year >= input$year[1], year <= input$year[2],   # Year filter
-        country %in% input$country,                     # Country filter
+        continent %in% input$continent,                 # Continent
+        # country_clean %in% input$country,               # Country filter
         shape %in% input$shape                          # Shape filter
       )
     
@@ -34,42 +35,47 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   
   
   # Filter UI elements ------------------------------------------------------
-
-  output$filter_country <- renderUI({
-    country_list <- d.ufo() %>% 
-      count(country, sort = TRUE) %>% 
-      head(n = 100) %>% 
-      pull(country)
-
+  
+  make_filter_ui_element <- function(variable, ui_id, ui_label) {
+    # use dplyr's new quotation feature to obtain column name
+    variable <- enquo(variable)
+    
+    # build list of choices for picker element
+    choice_list <- d.ufo() %>% 
+      count(!!variable, sort = TRUE) %>% 
+      na.omit()
+    
+    # create picker element
     pickerInput(
-      inputId = ns("country"), 
-      label = "Select countries", 
-      choices = country_list, 
-      selected = country_list,
-      options = list(`actions-box` = TRUE), 
+      inputId = ui_id, 
+      label = ui_label, 
+      choices = choice_list %>% pull(!!variable), 
+      selected = choice_list %>% pull(!!variable),
+      choicesOpt = list(subtext = sprintf("(%s records)", format(choice_list$n, big.mark = ","))),
+      options = list(
+        `actions-box` = TRUE, 
+        `live-search` = TRUE, 
+        `live-search-placeholder` = "Type to search",
+        `selected-text-format` = "count > 5"), 
       multiple = TRUE)
+  }
+
+  output$filter_continent <- renderUI({
+    make_filter_ui_element(continent, ns("continent"), "Select continent")
+  })  
+
+  output$filter_shape <- renderUI({
+    make_filter_ui_element(shape, ns("shape"), "Select UFO shape")
   })  
   
-  output$filter_shape <- renderUI({
-    shape_list <- d.ufo() %>% 
-      distinct(shape) %>% 
-      na.omit() %>% 
-      arrange(shape) %>% 
-      pull(shape)
-    
-    pickerInput(
-      inputId = ns("shape"), 
-      label = "Select UFO shape", 
-      choices = shape_list,
-      selected = shape_list,
-      options = list(`actions-box` = TRUE), 
-      multiple = TRUE)
-  })  
   
   # Map ---------------------------------------------------------------------
 
   output$map <- renderLeaflet({
-    leaflet(data = d.ufo_filtered()) %>% 
+    leaflet(
+        data = d.ufo_filtered(),
+        options = leafletOptions(zoomControl = FALSE, attributionControl = FALSE)
+      ) %>% 
       clearMarkerClusters() %>% 
       addTiles() %>% 
       addMarkers(lng = ~longitude, lat = ~latitude, popup = ~ html_label, clusterOptions = markerClusterOptions())
@@ -79,7 +85,7 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   # Time series plots -------------------------------------------------------
   
   output$date_plot_ui <- renderUI({
-    if(input$table_view) {
+    if(input$table_view == "table") {
       dataTableOutput(ns("date_plot_table"), height = 400) %>% withSpinner(type = 3, color.background = "white")
     } else {
       highchartOutput(ns("date_plot"), height = 250) %>% withSpinner(type = 3, color.background = "white")
@@ -123,8 +129,16 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     
     # aggregate data
     group_var <- input$date_plot_dimension
-    d <- d.ufo_filtered() %>% 
-      count(.data[[group_var]])
+    d <- switch(input$date_plot_column,
+      "obs_total" = d.ufo_filtered() %>% 
+        count(.data[[group_var]]) %>% 
+        mutate(split_var = "Counts"),
+      "obs_by_continent" = d.ufo_filtered() %>% 
+        group_by(.data[[group_var]], .data[["continent"]]) %>% 
+        summarise(n = n()) %>% 
+        rename(split_var = continent)# %>% 
+        # arrange(group_var, split_var)
+    )
     
     # determine plot type
     plot_type <- switch(
@@ -137,10 +151,15 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     
     # plot chart
     group_var_pretty <- gsub(pattern = "_", replacement = " ", group_var)
-    hchart(d, plot_type, hcaes_string(x = "group_var", y = "n")) %>% 
+    hchart(d, plot_type, hcaes(x = group_var, y = n, group = split_var)) %>% 
       hc_yAxis(title = list(text = "")) %>% 
-      hc_xAxis(title = list(text = group_var_pretty)) %>% 
+      hc_xAxis(title = list(text = NULL)) %>%
       hc_title(text = paste0("Number of observations by ", group_var_pretty)) %>% 
+      hc_plotOptions(
+        area = list(stacking = "normal"),
+        column = list(stacking = "normal")
+      ) %>% 
+      hc_tooltip(shared = TRUE) %>% 
       hc_add_theme(hc_app_theme())
   })
   
@@ -168,11 +187,11 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     
     # aggregate data
     d <- d.ufo_filtered() %>% 
-      count(country, sort = TRUE) %>% 
+      count(iso, sort = TRUE) %>% 
       head(n = 10)
     
     # plot chart  
-    hchart(d, "bar", hcaes(x = country, y = n)) %>% 
+    hchart(d, "bar", hcaes(x = iso, y = n)) %>% 
       hc_yAxis(title = list(text = "")) %>% 
       hc_xAxis(title = list(text = "")) %>% 
       hc_title(text = "Top 10 countries") %>% 
@@ -192,9 +211,9 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     
     # plot chart  
     hcdensity(d) %>% 
-      hc_yAxis(title = list(text = "")) %>% 
+      hc_yAxis(visible = F) %>% 
       hc_xAxis(title = list(text = "minutes")) %>% 
-      hc_title(text = "Distribution of sight duration") %>% 
+      hc_title(text = "Sight duration") %>% 
       hc_add_theme(hc_app_theme())
   })
 }

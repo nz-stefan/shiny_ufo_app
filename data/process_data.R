@@ -9,6 +9,8 @@
 library(tidyverse)
 library(lubridate)
 
+source("data/coords2country.R")
+
 
 # Config ------------------------------------------------------------------
 
@@ -30,16 +32,32 @@ d.ufo <- read_csv(
 d.ufo_clean <- d.ufo %>% 
   filter(!is.na(longitude) & !is.na(latitude)) %>% 
   mutate(
-    datetime = strptime(datetime, "%m/%e/%Y %H:%M") %>% as.POSIXct(),
-    country_extract = str_match(city, "\\(([\\w|/|\\s]+)\\)$") %>% .[,2],
-    country = ifelse(is.na(country), country_extract, country)
+    datetime = strptime(datetime, "%m/%e/%Y %H:%M") %>% as.POSIXct()
+    # country_extract = str_match(city, "\\(([\\w|/|\\s]+)\\)$") %>% .[,2],
+    # country = ifelse(is.na(country), country_extract, country)
     # TODO: Clean up case of city and country names
-  ) %>% 
-  select(-country_extract)
+  )
 
 
 # Add fields --------------------------------------------------------------
 
+# compute location information from lng/lat coordindates, since countries
+# given in the data set are inconsistent with lots of missing values
+d.location_info <- d.ufo_clean %>% 
+  select(lon = longitude, lat = latitude) %>% 
+  coords2continent() %>% 
+  mutate(
+    country_clean = as.character(ADMIN),
+    continent = as.character(REGION),
+    iso = as.character(ISO3),
+    population = POP_EST
+  ) %>% 
+  select(country_clean, continent, iso, population)
+
+
+# d.ufo_clean <- bind_cols(d.ufo_clean, d.location_info)
+
+# define formatting of the future tooltip shown in the map
 make_html_table <- function(datetime, city, country, shape, duration) {
   HTML_TEMPLATE <- "<table>
   <tr><td>Time:</td><td>%s</td></tr>
@@ -61,7 +79,8 @@ d.ufo_final <- d.ufo_clean %>%
     hour_of_day = hour(datetime),
     html_label = make_html_table(strftime(datetime, "%b %d %Y at %l%p"), city, country, shape, duration_pretty)
   ) %>% 
-  select(datetime, date, year, month, day_of_week, hour_of_day, city, country, shape, duration, duration_pretty, latitude, longitude, comments, html_label)
+  select(datetime, date, year, month, day_of_week, hour_of_day, city, shape, duration, duration_pretty, latitude, longitude, comments, html_label) %>% 
+  bind_cols(d.location_info)
 
 
 # Export ------------------------------------------------------------------

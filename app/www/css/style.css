@@ -1,3 +1,11 @@
+/** Pulldown button **********************************************************/
+
+.btn-chart {
+  padding: 2px 10px 2px 10px;
+  background-color: #EEE;
+  font-weight: 500;
+}
+
 
 /** Material design cards ****************************************************/
 
