@@ -72,8 +72,27 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   # Map ---------------------------------------------------------------------
 
   output$map <- renderLeaflet({
+    d <- d.ufo_filtered()
+
+    # limit the number of records shown in the map for performance reasons
+    MAX_RECORDS <- 20000
+    if(nrow(d) > MAX_RECORDS) {
+      d <- sample_n(d, MAX_RECORDS)
+      sendSweetAlert(
+        messageId = ns("msg_too_many_items"), 
+        title = "Too many records", 
+        text = sprintf(
+          "There are more than %d records to show on the map. Use the filter to reduce
+          the number of sightings. Showing %d randomly selected records on the map for now.", 
+          MAX_RECORDS, MAX_RECORDS), 
+        type = "warning",
+        html = TRUE
+      )
+      
+    }
+    
     leaflet(
-        data = d.ufo_filtered(),
+        data = d,
         options = leafletOptions(zoomControl = FALSE, attributionControl = FALSE)
       ) %>% 
       clearMarkerClusters() %>% 
@@ -217,7 +236,3 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       hc_add_theme(hc_app_theme())
   })
 }
-
-
-
-

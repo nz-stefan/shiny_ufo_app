@@ -110,19 +110,23 @@ sightsModuleUI <- function(id) {
     
     # Summary UI --------------------------------------------------------------
     
-    fluidRow(
-      column(
-        width = 4,
-        material_card(highchartOutput(ns("summary_shape"), height = 250) %>% withSpinner(type = 3, color.background = "white"))
-      ),
-      column(
-        width = 4,
-        material_card(highchartOutput(ns("summary_duration"), height = 250) %>% withSpinner(type = 3, color.background = "white"))
-      ),
-      column(
-        width = 4,
-        material_card(highchartOutput(ns("summary_country"), height = 250) %>% withSpinner(type = 3, color.background = "white"))
+    material_card(
+      fluidRow(
+        column(
+          width = 4,
+          highchartOutput(ns("summary_shape"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+        ),
+        column(
+          width = 4,
+          highchartOutput(ns("summary_duration"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+        ),
+        column(
+          width = 4,
+          highchartOutput(ns("summary_country"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+        )
       )
-    )
+    ),
+    
+    receiveSweetAlert(messageId = ns("msg_too_many_items"))
   )
 }
