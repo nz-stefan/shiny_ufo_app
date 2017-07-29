@@ -1,3 +1,18 @@
+/** Theme adjustments ********************************************************/
+
+.skin-green .left-side, .skin-green .main-sidebar {
+  background-color: #222d32;
+}
+
+.skin-green .wrapper {
+  background-color: #ecf0f5;
+}
+
+.fixed-width {
+  max-width: 1200px;
+}
+
+
 /** Pulldown button **********************************************************/
 
 .btn-chart {
@@ -17,8 +32,7 @@
   margin-top: 10px;
   box-sizing: border-box;
   border-radius: 2px;
-  background-clip: padding-box;
-  max-width: 1200px;
+  background-clip: padding-box
 }
 .card .card-content {
   padding: 16px;

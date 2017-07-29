@@ -26,10 +26,22 @@ db_sidebar <- dashboardSidebar(
 # Body --------------------------------------------------------------------
 
 db_body <- dashboardBody(
+  # add CSS customizations
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/style.css")
   ),
   
+  # make sidebar collapse when a menu item is clicked
+  tags$script("$('.sidebar-menu a').click(function (e) {
+        $('body').addClass('sidebar-collapse');
+        $('body').removeClass('sidebar-open');
+      });"),
+
+  # set a max width for the content (looks nicer on larger screens)
+  tags$script("$('.content-wrapper').addClass('fixed-width');"),
+  
+
+  # add content for each menu item
   tabItems(
     
     # Sights ------------------------------------------------------------------
@@ -52,21 +64,7 @@ db_body <- dashboardBody(
     
     tabItem(
       tabName = "start",
-      # rankModuleUI("about_module")
-      material_card(
-        header = tags$img(src = "cow-ufo.jpg", width = "100%"),
-        h1("UFO Sightings"),
-        h3("Reports of unidentified flying objects in the last century"),
-        p("This dataset contains over 80,000 reports of UFO sightings over the last century.
-          collected by the National UFO Reporting Center (NUFORC). It is publicly available
-          at ", tags$a("GitHub", href = "https://github.com/planetsig/ufo-reports"), " and",
-          tags$a("Kaggle", href = "https://www.kaggle.com/donyoe/exploring-ufo-sightings"), "."),
-        p("The dataset was chosen in this demo because of its mixture of geolocation, time
-          series and textual information.
-          This app is implemented in the ", tags$a("R Shiny", href = "https://shiny.rstudio.com"),
-          " web application framework. The code is available on ",
-          tags$a("GitHub", href = "https://github.com/nz-stefan/shiny_ufo_app"), ".")
-      )
+      startModuleUI("start_module")
     )
   )
 )
@@ -78,5 +76,5 @@ ui <- dashboardPage(
   db_header,
   db_sidebar,
   db_body,
-  skin = "red"
+  skin = "green"
 )

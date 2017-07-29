@@ -32,6 +32,18 @@ sightsModuleUI <- function(id) {
       )
     ),
     
+
+    # Info boxes --------------------------------------------------------------
+    
+    div(
+      fluidRow(
+        infoBoxOutput(ns("total_sightings")),
+        infoBoxOutput(ns("total_duration")),
+        infoBoxOutput(ns("total_countries"))
+      ),
+      style = "margin-top: 15px; margin-bottom: -10px"
+    ),
+
     
     # Map UI ------------------------------------------------------------------
     
@@ -75,18 +87,6 @@ sightsModuleUI <- function(id) {
           ),
           style = "text-align: right"
         ),
-        
-        # column(
-        #   width = 2, 
-        #   switchInput(
-        #     ns("table_view"), 
-        #     label = "TABLE", 
-        #     onLabel = "ON", onStatus = "primary",
-        #     offLabel = "OFF", offStatus = "warning",
-        #     size = "mini"
-        #   ),
-        #   style = "text-align: right;"
-        # ),
         column(
           width = 12,
           uiOutput(ns("date_plot_ui"))

@@ -27,10 +27,25 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       filter(
         year >= input$year[1], year <= input$year[2],   # Year filter
         continent %in% input$continent,                 # Continent
-        # country_clean %in% input$country,               # Country filter
         shape %in% input$shape                          # Shape filter
       )
     
+  })
+  
+  d.ufo_aggregated <- reactive({
+    group_var <- input$date_plot_dimension
+    switch(input$date_plot_column,
+      "obs_total" = 
+        d.ufo_filtered() %>% 
+        count(.data[[group_var]]) %>% 
+        mutate(split_var = "Counts"),
+      "obs_by_continent" = 
+        d.ufo_filtered() %>% 
+        group_by(.data[[group_var]], .data[["continent"]]) %>% 
+        summarise(n = n()) %>% 
+        rename(split_var = continent)
+    ) %>% 
+      select(group_var, split_var, n)
   })
   
   
@@ -75,27 +90,28 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     d <- d.ufo_filtered()
 
     # limit the number of records shown in the map for performance reasons
-    MAX_RECORDS <- 20000
+    MAX_RECORDS <- 10000
+    formatted_max_record = format(MAX_RECORDS, big.mark = ",")
+    
     if(nrow(d) > MAX_RECORDS) {
       d <- sample_n(d, MAX_RECORDS)
       sendSweetAlert(
         messageId = ns("msg_too_many_items"), 
         title = "Too many records", 
         text = sprintf(
-          "There are more than %d records to show on the map. Use the filter to reduce
-          the number of sightings. Showing %d randomly selected records on the map for now.", 
-          MAX_RECORDS, MAX_RECORDS), 
+          "There are more than %s records to show on the map. Use the filter to reduce
+          the number of sightings. Showing %s randomly selected records on the map for now.", 
+          formatted_max_record, formatted_max_record), 
         type = "warning",
         html = TRUE
       )
-      
     }
     
+    # create the map
     leaflet(
         data = d,
-        options = leafletOptions(zoomControl = FALSE, attributionControl = FALSE)
+        options = leafletOptions(zoomControl = FALSE, attributionControl = FALSE)  # because map control's z-index is buggy
       ) %>% 
-      clearMarkerClusters() %>% 
       addTiles() %>% 
       addMarkers(lng = ~longitude, lat = ~latitude, popup = ~ html_label, clusterOptions = markerClusterOptions())
   })
@@ -105,7 +121,11 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   
   output$date_plot_ui <- renderUI({
     if(input$table_view == "table") {
-      dataTableOutput(ns("date_plot_table"), height = 400) %>% withSpinner(type = 3, color.background = "white")
+      div(
+        dataTableOutput(ns("date_plot_table"), height = 400) %>% withSpinner(type = 3, color.background = "white"),
+        style = "margin-bottom: 60px"
+      )
+      
     } else {
       highchartOutput(ns("date_plot"), height = 250) %>% withSpinner(type = 3, color.background = "white")
     }
@@ -113,13 +133,6 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   
   output$date_plot_table <- renderDataTable({
     req(nrow(d.ufo_filtered()) > 0)   # at least one data record required for plotting
-    
-    # aggregate data
-    group_var <- input$date_plot_dimension
-    group_var_pretty <- gsub(pattern = "_", replacement = " ", group_var)
-    d <- d.ufo_filtered() %>% 
-      count(.data[[group_var]]) %>% 
-      set_names(c(group_var_pretty, "counts")) 
     
     # specify data table options
     dt_options <- list(
@@ -129,35 +142,33 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       pagingType = "simple_numbers",
       autoWidth = TRUE)
     
+    # compute min and max counts for setting length of cell color bar
+    min_counts <- min(d.ufo_aggregated()$n)
+    max_counts <- max(d.ufo_aggregated()$n)
+    
+    # clean up column names before converting to data table
+    d <- d.ufo_aggregated() %>% 
+      rename(time = group_var, location = split_var, counts = n)
+    
+    # remove non-variate columns
+    if(n_distinct(d$location) == 1) {
+      d <- d %>% select(-location)
+    }
+    
     # convert to data table
-    df_dt <- d %>% 
-      datatable(dt_options, rownames= FALSE, escape = FALSE) %>% 
+    d %>% 
+      datatable(dt_options, rownames = FALSE, escape = FALSE) %>% 
       formatStyle(
-        2,
-        background = styleColorBar(c(min(d$counts), 1.01 * max(d$counts)), '#63B8FF'),
+        ncol(d),
+        background = styleColorBar(c(min_counts, 1.01 * max_counts), '#63B8FF'),
         backgroundSize = '100% 90%',
         backgroundRepeat = 'no-repeat',
         backgroundPosition = 'center'
       )
-    
-    df_dt
   })
   
   output$date_plot <- renderHighchart({
     req(nrow(d.ufo_filtered()) > 0)   # at least one data record required for plotting
-    
-    # aggregate data
-    group_var <- input$date_plot_dimension
-    d <- switch(input$date_plot_column,
-      "obs_total" = d.ufo_filtered() %>% 
-        count(.data[[group_var]]) %>% 
-        mutate(split_var = "Counts"),
-      "obs_by_continent" = d.ufo_filtered() %>% 
-        group_by(.data[[group_var]], .data[["continent"]]) %>% 
-        summarise(n = n()) %>% 
-        rename(split_var = continent)# %>% 
-        # arrange(group_var, split_var)
-    )
     
     # determine plot type
     plot_type <- switch(
@@ -169,14 +180,15 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     )
     
     # plot chart
-    group_var_pretty <- gsub(pattern = "_", replacement = " ", group_var)
-    hchart(d, plot_type, hcaes(x = group_var, y = n, group = split_var)) %>% 
+    group_var_pretty <- gsub(pattern = "_", replacement = " ", input$date_plot_dimension)
+    hchart(d.ufo_aggregated(), plot_type, hcaes(x = group_var, y = n, group = split_var)) %>% 
       hc_yAxis(title = list(text = "")) %>% 
-      hc_xAxis(title = list(text = NULL)) %>%
+      hc_xAxis(title = list(text = NULL), allowDecimals = FALSE) %>%
       hc_title(text = paste0("Number of observations by ", group_var_pretty)) %>% 
       hc_plotOptions(
         area = list(stacking = "normal"),
-        column = list(stacking = "normal")
+        column = list(stacking = "normal"),
+        series = list(color = if(input$date_plot_column == "obs_total") "#109618")
       ) %>% 
       hc_tooltip(shared = TRUE) %>% 
       hc_add_theme(hc_app_theme())
@@ -198,7 +210,17 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       hc_yAxis(title = list(text = "")) %>% 
       hc_xAxis(title = list(text = "")) %>% 
       hc_title(text = "Top 10 UFO shapes") %>% 
-      hc_add_theme(hc_app_theme())
+      hc_plotOptions(
+        series = list(color = "#0099C6"),
+        bar = list(dataLabels = list(enabled = TRUE))
+      ) %>% 
+      hc_add_theme(
+        hc_theme_merge(
+          hc_app_theme(),
+          hc_theme(yAxis = list(labels = list(enabled = FALSE)))
+        )
+      )
+    
   })
   
   output$summary_country <- renderHighchart({
@@ -206,15 +228,24 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     
     # aggregate data
     d <- d.ufo_filtered() %>% 
-      count(iso, sort = TRUE) %>% 
+      count(country_clean, sort = TRUE) %>% 
       head(n = 10)
     
     # plot chart  
-    hchart(d, "bar", hcaes(x = iso, y = n)) %>% 
+    hchart(d, "bar", hcaes(x = country_clean, y = n)) %>% 
       hc_yAxis(title = list(text = "")) %>% 
       hc_xAxis(title = list(text = "")) %>% 
       hc_title(text = "Top 10 countries") %>% 
-      hc_add_theme(hc_app_theme())
+      hc_plotOptions(
+        series = list(color = "#990099"),
+        bar = list(dataLabels = list(enabled = TRUE))
+      ) %>% 
+      hc_add_theme(
+        hc_theme_merge(
+          hc_app_theme(),
+          hc_theme(yAxis = list(labels = list(enabled = FALSE)))
+        )
+      )
   })
   
   output$summary_duration <- renderHighchart({
@@ -231,8 +262,37 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     # plot chart  
     hcdensity(d) %>% 
       hc_yAxis(visible = F) %>% 
-      hc_xAxis(title = list(text = "minutes")) %>% 
+      hc_xAxis(title = list(text = "minutes"), min = 0) %>% 
       hc_title(text = "Sight duration") %>% 
+      hc_plotOptions(series = list(color = "#FF9900")) %>% 
       hc_add_theme(hc_app_theme())
   })
+
+
+  # Info boxes ----------------------------------------------------------------
+  
+  output$total_sightings <- renderInfoBox({
+    infoBox(
+      title = "Total Sightings", subtitle = "records",
+      value = nrow(d.ufo_filtered())%>% format(big.mark = ","), 
+      icon = icon("space-shuttle"),
+      color = "green")
+  })
+  
+  output$total_duration <- renderInfoBox({
+    infoBox(
+      title = "Total Duration", subtitle = "hours",
+      value = round(sum(d.ufo_filtered()$duration, na.rm = T) / 3600) %>% format(big.mark = ","), 
+      icon = icon("clock-o"),
+      color = "orange")
+  })
+  
+  output$total_countries <- renderInfoBox({
+    infoBox(
+      title = "Location", subtitle = "countries",
+      value = n_distinct(d.ufo_filtered()$country_clean) %>% format(big.mark = ","), 
+      icon = icon("globe"),
+      color = "purple")
+  })
+  
 }

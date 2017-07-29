@@ -25,3 +25,4 @@ source("utils.R")
 # Load modules ------------------------------------------------------------
 
 source("modules/sights/global.R")
+source("modules/start/global.R")
