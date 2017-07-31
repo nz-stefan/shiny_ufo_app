@@ -19,5 +19,6 @@ shinyServer(
     
     # call modules to add functionality of dashboard tabs
     callModule(sightsModule, "sights_module")
+    callModule(notesModule, "notes_module")
     # callModule(salesModule, "sales_module", conf, constants)
   })

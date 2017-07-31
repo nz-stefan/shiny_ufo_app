@@ -2,7 +2,7 @@
 # Server logic for the SIGHTS module
 #
 # Author: Stefan Schliebs
-# Created: 13 Feb 2017
+# Created: 2017-07-25
 ###########################################################
 
 

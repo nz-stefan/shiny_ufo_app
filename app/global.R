@@ -15,6 +15,7 @@ library(leaflet)
 library(highcharter)
 library(DT)
 library(tidyverse)
+library(d3wordcloud)
 
 
 # Load utilities ----------------------------------------------------------
@@ -26,3 +27,4 @@ source("utils.R")
 
 source("modules/sights/global.R")
 source("modules/start/global.R")
+source("modules/notes/global.R")

@@ -54,8 +54,8 @@ db_body <- dashboardBody(
     # Notes -------------------------------------------------------------------
     
     tabItem(
-      tabName = "notes"#,
-      # trendsModuleUI("notes_module")
+      tabName = "notes",
+      notesModuleUI("notes_module")
     ),
     
     
