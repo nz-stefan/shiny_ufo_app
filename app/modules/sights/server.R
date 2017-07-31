@@ -23,17 +23,20 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
 
   # filter data according to user input
   d.ufo_filtered <- reactive({
+    req(input$year, input$continent, input$shape)
+
     d.ufo() %>% 
       filter(
         year >= input$year[1], year <= input$year[2],   # Year filter
         continent %in% input$continent,                 # Continent
         shape %in% input$shape                          # Shape filter
       )
-    
   })
   
   d.ufo_aggregated <- reactive({
     group_var <- input$date_plot_dimension
+    
+    # aggregate data according to selected dimension
     switch(input$date_plot_column,
       "obs_total" = 
         d.ufo_filtered() %>% 
@@ -41,8 +44,7 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
         mutate(split_var = "Counts"),
       "obs_by_continent" = 
         d.ufo_filtered() %>% 
-        group_by(.data[[group_var]], .data[["continent"]]) %>% 
-        summarise(n = n()) %>% 
+        count(.data[[group_var]], .data[["continent"]]) %>% 
         rename(split_var = continent)
     ) %>% 
       select(group_var, split_var, n)
@@ -86,9 +88,21 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   
   # Map ---------------------------------------------------------------------
 
+  # plot empty map and use observe() to handle map changes
   output$map <- renderLeaflet({
+    leaflet(
+      # because map control's z-index is buggy, switch it off
+      options = leafletOptions(zoomControl = FALSE, attributionControl = FALSE)  
+    ) %>% 
+      addTiles()
+  })
+  
+  # handle map changes
+  observe({
+    req(nrow(d.ufo_filtered()) > 0)
+    
     d <- d.ufo_filtered()
-
+    
     # limit the number of records shown in the map for performance reasons
     MAX_RECORDS <- 10000
     formatted_max_record = format(MAX_RECORDS, big.mark = ",")
@@ -96,40 +110,27 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
     if(nrow(d) > MAX_RECORDS) {
       d <- sample_n(d, MAX_RECORDS)
       sendSweetAlert(
-        messageId = ns("msg_too_many_items"), 
-        title = "Too many records", 
+        messageId = ns("msg_too_many_items"),
+        title = "Too many records",
         text = sprintf(
           "There are more than %s records to show on the map. Use the filter to reduce
-          the number of sightings. Showing %s randomly selected records on the map for now.", 
-          formatted_max_record, formatted_max_record), 
+          the number of sightings. Showing %s randomly selected records on the map for now.",
+          formatted_max_record, formatted_max_record),
         type = "warning",
         html = TRUE
       )
     }
     
     # create the map
-    leaflet(
-        data = d,
-        options = leafletOptions(zoomControl = FALSE, attributionControl = FALSE)  # because map control's z-index is buggy
-      ) %>% 
-      addTiles() %>% 
-      addMarkers(lng = ~longitude, lat = ~latitude, popup = ~ html_label, clusterOptions = markerClusterOptions())
+    leafletProxy(ns("map"), data = d) %>% 
+      clearMarkerClusters() %>%
+      clearMarkers() %>% 
+      addMarkers(lng = ~longitude, lat = ~latitude, popup = ~ html_label, clusterOptions = markerClusterOptions()) %>% 
+      fitBounds(min(d$longitude), min(d$latitude), max(d$longitude), max(d$latitude))
   })
   
 
-  # Time series plots -------------------------------------------------------
-  
-  output$date_plot_ui <- renderUI({
-    if(input$table_view == "table") {
-      div(
-        dataTableOutput(ns("date_plot_table"), height = 400) %>% withSpinner(type = 3, color.background = "white"),
-        style = "margin-bottom: 60px"
-      )
-      
-    } else {
-      highchartOutput(ns("date_plot"), height = 250) %>% withSpinner(type = 3, color.background = "white")
-    }
-  })
+  # Time series table ---------------------------------------------------------
   
   output$date_plot_table <- renderDataTable({
     req(nrow(d.ufo_filtered()) > 0)   # at least one data record required for plotting
@@ -167,6 +168,21 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       )
   })
   
+
+  # Time series plots -------------------------------------------------------
+  
+  output$date_plot_ui <- renderUI({
+    if(input$table_view == "table") {
+      div(
+        dataTableOutput(ns("date_plot_table"), height = 400) %>% withSpinner(type = 3, color.background = "white"),
+        style = "margin-bottom: 60px"
+      )
+      
+    } else {
+      highchartOutput(ns("date_plot"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+    }
+  })
+  
   output$date_plot <- renderHighchart({
     req(nrow(d.ufo_filtered()) > 0)   # at least one data record required for plotting
     
@@ -194,7 +210,7 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       hc_add_theme(hc_app_theme())
   })
   
-  
+
   # Summary plots -----------------------------------------------------------
   
   output$summary_shape <- renderHighchart({
@@ -220,7 +236,6 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
           hc_theme(yAxis = list(labels = list(enabled = FALSE)))
         )
       )
-    
   })
   
   output$summary_country <- renderHighchart({
@@ -294,5 +309,4 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       icon = icon("globe"),
       color = "purple")
   })
-  
 }

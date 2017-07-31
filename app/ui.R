@@ -30,7 +30,7 @@ db_body <- dashboardBody(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/style.css")
   ),
-  
+
   # make sidebar collapse when a menu item is clicked
   tags$script("$('.sidebar-menu a').click(function (e) {
         $('body').addClass('sidebar-collapse');
@@ -39,7 +39,6 @@ db_body <- dashboardBody(
 
   # set a max width for the content (looks nicer on larger screens)
   tags$script("$('.content-wrapper').addClass('fixed-width');"),
-  
 
   # add content for each menu item
   tabItems(

@@ -30,7 +30,8 @@ d.ufo_tidytext <- d.ufo %>%
   ) %>% 
   left_join(get_sentiments("nrc"), by = "word") %>%  # add sentiment
   mutate(word = wordStem(word)) %>%         # apply stemming
-  spread(sentiment)
+  mutate(val = ifelse(is.na(sentiment), 0, 1)) %>% 
+  spread(sentiment, val)
 
 
 d.ufo_tidytext %>% 

@@ -47,13 +47,9 @@ sightsModuleUI <- function(id) {
     
     # Map UI ------------------------------------------------------------------
     
-    material_card(
-      fluidRow(
-        column(
-          width = 12, offset = 0,
-          leafletOutput(ns("map"), height = 300) %>% withSpinner(type = 3, color.background = "white")
-        )
-      )
+    div(
+      class = "card",
+      leafletOutput(ns("map"), height = 300) %>% withSpinner(type = 3, color.background = "white")
     ),
     
     
@@ -64,12 +60,12 @@ sightsModuleUI <- function(id) {
         column(
           width = 2,
           radioGroupButtons(
-            ns("table_view"), 
-            label = NULL, 
+            ns("table_view"),
+            label = NULL,
             choices = c(
-              `<i class='fa fa-bar-chart'></i>` = "chart", 
+              `<i class='fa fa-bar-chart'></i>` = "chart",
               `<i class='fa fa-table'></i>` = "table"
-            ), 
+            ),
             selected = "chart",
             size = "xs"
           )
@@ -77,8 +73,8 @@ sightsModuleUI <- function(id) {
         column(
           width = 10,
           pickerInput(
-            ns("date_plot_column"), 
-            label = NULL, 
+            ns("date_plot_column"),
+            label = NULL,
             choices = c("Total observations" = "obs_total", "Observations by continent" = "obs_by_continent"),
             selected = "obs_total",
             multiple = FALSE,
@@ -94,8 +90,8 @@ sightsModuleUI <- function(id) {
         column(
           width = 12,
           awesomeRadio(
-            ns("date_plot_dimension"), 
-            label = NULL, #"Select time dimension", 
+            ns("date_plot_dimension"),
+            label = NULL, #"Select time dimension",
             choices = c("year" = "year", "month" = "month", "weekday" = "day_of_week", "hour" = "hour_of_day"),
             selected = "year",
             status = "success",
@@ -103,7 +99,6 @@ sightsModuleUI <- function(id) {
           ),
           style = "text-align: right;"
         )
-        
       )
     ),
     
@@ -126,7 +121,7 @@ sightsModuleUI <- function(id) {
         )
       )
     ),
-    
+
     receiveSweetAlert(messageId = ns("msg_too_many_items"))
   )
 }
