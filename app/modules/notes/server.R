@@ -84,7 +84,7 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
     
     d <- d %>% 
       count(word, sort = TRUE) %>% 
-      head(n = 100)
+      head(n = 50)
     
     # delete the canvas of current wordcloud because the widget re-uses previous canvas
     runjs(sprintf("$('#%s svg g').empty();", ns("wordcloud")))
