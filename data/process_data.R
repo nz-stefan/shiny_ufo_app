@@ -33,8 +33,6 @@ d.ufo_clean <- d.ufo %>%
   filter(!is.na(longitude) & !is.na(latitude)) %>% 
   mutate(
     datetime = strptime(datetime, "%m/%e/%Y %H:%M") %>% as.POSIXct()
-    # country_extract = str_match(city, "\\(([\\w|/|\\s]+)\\)$") %>% .[,2],
-    # country = ifelse(is.na(country), country_extract, country)
     # TODO: Clean up case of city and country names
   )
 
@@ -54,8 +52,6 @@ d.location_info <- d.ufo_clean %>%
   ) %>% 
   select(country_clean, continent, iso, population)
 
-
-# d.ufo_clean <- bind_cols(d.ufo_clean, d.location_info)
 
 # define formatting of the future tooltip shown in the map
 make_html_table <- function(datetime, city, country, shape, duration) {
@@ -85,4 +81,4 @@ d.ufo_final <- d.ufo_clean %>%
 
 # Export ------------------------------------------------------------------
 
-write_rds(d.ufo_final, "app/data/ufo-cleaned.rds")
+write_rds(d.ufo_final, "app/data/ufo-cleaned.rds", compress = "gz")

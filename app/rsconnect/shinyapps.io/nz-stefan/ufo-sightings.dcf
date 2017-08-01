@@ -3,9 +3,9 @@ title: ufo-sightings
 account: nz-stefan
 server: shinyapps.io
 appId: 199594
-bundleId: 920188
+bundleId: 923101
 url: https://nz-stefan.shinyapps.io/ufo-sightings/
-when: 1501332059.10253
+when: 1501587651.78529
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .gitkeep

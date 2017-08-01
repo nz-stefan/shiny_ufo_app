@@ -9,8 +9,7 @@
 notesModuleUI <- function(id) {
   # obtain namespace
   ns <- NS(id)
-  useShinyjs()
-  
+
   tagList(
     
     # Filter UI ---------------------------------------------------------------
@@ -38,8 +37,13 @@ notesModuleUI <- function(id) {
     material_card(
       fluidRow(
         column(
-          width = 12,
+          width = 8,
+          uiOutput(ns("sentiment_filter")),
           d3wordcloudOutput(ns("wordcloud"))
+        ),
+        column(
+          width = 4,
+          highchartOutput(ns("sentiment_counts"))
         )
       )
     )

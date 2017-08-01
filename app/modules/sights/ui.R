@@ -9,7 +9,6 @@
 sightsModuleUI <- function(id) {
   # obtain namespace
   ns <- NS(id)
-  useShinyjs()
 
   tagList(
 

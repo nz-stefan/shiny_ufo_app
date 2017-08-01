@@ -26,6 +26,9 @@ db_sidebar <- dashboardSidebar(
 # Body --------------------------------------------------------------------
 
 db_body <- dashboardBody(
+  # include shinyjs globally (must be included once only)
+  useShinyjs(),
+  
   # add CSS customizations
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/style.css")
