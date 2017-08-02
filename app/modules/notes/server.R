@@ -19,9 +19,8 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
   # Data  ---------------------------------------------------------------------
   
   # load all datasets
-  d.ufo_notes <- reactive(read_rds("data/ufo-notes.rds"))
-  d.record_sentiment <- reactive(read_rds("data/record-sentiments.rds"))
-  
+  d.ufo_notes <- reactive(read_rds("data/ufo-tidytext.rds"))
+
   # filter data according to user input
   d.notes_filtered <- reactive({
     req(input$year, input$continent, input$shape)
@@ -75,20 +74,19 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
   output$wordcloud <- renderD3wordcloud({
     req(nrow(d.notes_filtered()) > 0)
     
+    # filter by clicked sentiment
     d <- d.notes_filtered()
     if(!is.null(input$hcClicked)) {
-      d <- d %>% 
-        left_join(d.record_sentiment(), by = "rec_id") %>% 
-        filter(sentiment == input$hcClicked)
+      d <- d %>% filter(sentiment == input$hcClicked)
     }
     
     d <- d %>% 
       count(word, sort = TRUE) %>% 
-      head(n = 50)
+      head(n = 100)
     
     # delete the canvas of current wordcloud because the widget re-uses previous canvas
     runjs(sprintf("$('#%s svg g').empty();", ns("wordcloud")))
-    d3wordcloud(d$word, d$n)
+    d3wordcloud(d$word, d$n, size.scale = "log")
   })
   
   
@@ -97,24 +95,28 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
   output$sentiment_counts <- renderHighchart({
     req(nrow(d.notes_filtered()) > 0)
 
+    clicked <- if(!is.null(input$hcClicked)) input$hcClicked else "positive"
+
     # count UFO sightings by sentiment
     d <- d.notes_filtered() %>% 
-      left_join(d.record_sentiment(), by = "rec_id") %>% 
       group_by(sentiment) %>%
       summarise(n = n_distinct(rec_id)) %>%
       arrange(desc(n)) %>% 
-      na.omit()
-    
+      na.omit() %>% 
+      mutate(col = "#0099C6") %>% 
+      mutate(col = ifelse(sentiment == clicked, "#FF9900", col))
+
     callback_func <- JS("function(event) {Shiny.onInputChange('notes_module-hcClicked', event.point.name);}")
     
-    hchart(d, "bar", hcaes(x = sentiment, y = n)) %>% 
-      hc_yAxis(title = list(text = "")) %>% 
+    hchart(d, "bar", hcaes(x = sentiment, y = n, color = col)) %>% 
+      hc_yAxis(title = list(text = ""), breaks = c(0, max(d$n))) %>% 
       hc_xAxis(title = list(text = "")) %>% 
-      hc_title(text = "# sightings by sentiment") %>% 
-      hc_subtitle(text = "Click on a bar to filter records by sentiment") %>% 
+      hc_title(text = "Distribution of sentiment") %>% 
+      hc_subtitle(text = "Click on bar to filter by sentiment") %>% 
+      hc_tooltip(enabled = FALSE) %>% 
       hc_plotOptions(
         series = list(color = "#990099"),
-        bar = list(dataLabels = list(enabled = TRUE), events = list(click = callback_func))
+        bar = list(events = list(click = callback_func))
       ) %>% 
       hc_add_theme(
         hc_theme_merge(
@@ -123,20 +125,4 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
         )
       )
   })  
-  
-  output$sentiment_filter <- renderUI({
-    req(nrow(d.notes_filtered()) > 0)
-
-    if(!is.null(input$hcClicked)) {
-      h4(sprintf("Records associated with sentiment '%s'", input$hcClicked))
-    }
-  })
-  
-  observe({
-    print(input$hcClicked)
-  })
 }
-
-
-
-

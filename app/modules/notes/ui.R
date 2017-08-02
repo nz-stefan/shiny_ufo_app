@@ -38,7 +38,6 @@ notesModuleUI <- function(id) {
       fluidRow(
         column(
           width = 8,
-          uiOutput(ns("sentiment_filter")),
           d3wordcloudOutput(ns("wordcloud"))
         ),
         column(
