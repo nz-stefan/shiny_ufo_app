@@ -38,13 +38,19 @@ notesModuleUI <- function(id) {
       fluidRow(
         column(
           width = 8,
-          d3wordcloudOutput(ns("wordcloud"))
+          introBox(
+            d3wordcloudOutput(ns("wordcloud")),
+            data.step = 2,
+            data.intro = "Hala"
+          )
+          
         ),
         column(
           width = 4,
           highchartOutput(ns("sentiment_counts"))
         )
       )
-    )
+    ),
+    h2("haha", id = "one")
   )
 }

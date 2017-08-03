@@ -21,4 +21,20 @@ shinyServer(
     callModule(sightsModule, "sights_module")
     callModule(notesModule, "notes_module")
     # callModule(salesModule, "sales_module", conf, constants)
+    
+    observeEvent(input$intro, {
+      if (input$tabs == "notes") {
+        rintrojs::introjs(session, options = list(
+          steps = data.frame(element = c(NA, "#one"),
+                             intro = c("This first step is the same regardless of the tab, but the second step is different",
+                                       "This is the first tab"))
+        ))
+      } else if (input$tabs == "sights") {
+        rintrojs::introjs(session, options = list(
+          steps = data.frame(element = c(NA, "#two"),
+                             intro = c("This first step is the same regardless of the tab, but the second step is different",
+                                       "This is the second tab"))
+        ))
+      }
+    })
   })

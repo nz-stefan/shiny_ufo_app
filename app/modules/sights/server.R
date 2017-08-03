@@ -309,4 +309,6 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       icon = icon("globe"),
       color = "purple")
   })
+  
+  observeEvent(input$intro_btn, introjs(session))
 }

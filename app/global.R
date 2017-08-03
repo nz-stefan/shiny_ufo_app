@@ -16,6 +16,7 @@ library(highcharter)
 library(DT)
 library(tidyverse)
 library(d3wordcloud)
+library(rintrojs)
 
 
 # Load utilities ----------------------------------------------------------

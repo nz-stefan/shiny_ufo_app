@@ -18,7 +18,11 @@ sightsModuleUI <- function(id) {
       fluidRow(
         column(
           width = 12,
-          sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%")
+          introBox(
+            sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%"),
+            data.step = 1, data.intro = "lala"
+          )
+          
         ),
         column(
           width = 6,
@@ -120,6 +124,8 @@ sightsModuleUI <- function(id) {
         )
       )
     ),
+    
+    h3("lalalala", id = "two"),
 
     receiveSweetAlert(messageId = ns("msg_too_many_items"))
   )

@@ -124,5 +124,7 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
           hc_theme(yAxis = list(labels = list(enabled = FALSE)))
         )
       )
-  })  
+  })
+  
+  observeEvent(input$intro_btn, introjs(session))
 }

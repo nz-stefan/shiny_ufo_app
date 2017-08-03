@@ -8,13 +8,14 @@
 
 # Header ------------------------------------------------------------------
 
-db_header <- dashboardHeader(disable = F, title = "UFO Sightings")
+db_header <- dashboardHeader(disable = F, title = "UFO Sightings", tags$li(class = "dropdown", actionButton("lal", "H")))
 
 
 # Sidebar -----------------------------------------------------------------
 
 db_sidebar <- dashboardSidebar(
   sidebarMenu(
+    id = "tabs",
     menuItem("Start", tabName = "start", icon = icon("home")),
     menuItem("UFO sightings", tabName = "sights", icon = icon("line-chart")),
     menuItem("UFO comments", tabName = "notes", icon = icon("comments-o"))
@@ -28,6 +29,9 @@ db_sidebar <- dashboardSidebar(
 db_body <- dashboardBody(
   # include shinyjs globally (must be included once only)
   useShinyjs(),
+  introjsUI(),
+  
+  actionButton("intro", "Intro"),
   
   # add CSS customizations
   tags$head(
