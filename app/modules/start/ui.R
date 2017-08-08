@@ -25,4 +25,21 @@ startModuleUI <- function(id) {
       tags$a("GitHub", href = "https://github.com/nz-stefan/shiny_ufo_app"), ".")
   )
 }
- 
+
+
+startModuleHelp <- function(id) {
+  ns <- NS(id)
+  
+  help_defs <- list(
+    list(
+      id = NA,
+      help = "Open the menu by clicking on the drawer symbol in the title to navigate 
+        to a particular page in the report. For each page additional help is available."
+    )
+  )
+  
+  data.frame(
+    element = lapply(help_defs, function(x) paste0("#", x$id)) %>% unlist(),
+    intro = lapply(help_defs, function(x) x$help) %>% unlist()
+  )
+}

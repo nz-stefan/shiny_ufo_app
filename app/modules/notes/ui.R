@@ -18,15 +18,27 @@ notesModuleUI <- function(id) {
       fluidRow(
         column(
           width = 12,
-          sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%")
+          div(
+            id = ns("year-help"),
+            sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%")
+          )
+          
         ),
         column(
           width = 6,
-          uiOutput(ns("filter_continent")) %>% withSpinner(type = 3, color.background = "white")
+          div(
+            id = ns("filter_continent-help"),
+            uiOutput(ns("filter_continent")) %>% withSpinner(type = 3, color.background = "white")
+          )
+          
         ),
         column(
           width = 6,
-          uiOutput(ns("filter_shape")) %>% withSpinner(type = 3, color.background = "white")
+          div(
+            id = ns("filter_shape-help"),
+            uiOutput(ns("filter_shape")) %>% withSpinner(type = 3, color.background = "white")
+          )
+          
         )
       )
     ),
@@ -38,19 +50,56 @@ notesModuleUI <- function(id) {
       fluidRow(
         column(
           width = 8,
-          introBox(
-            d3wordcloudOutput(ns("wordcloud")),
-            data.step = 2,
-            data.intro = "Hala"
+          div(
+            id = ns("wordcloud-help"),
+            d3wordcloudOutput(ns("wordcloud"))
           )
           
         ),
         column(
           width = 4,
-          highchartOutput(ns("sentiment_counts"))
+          div(
+            id = ns("sentiment_counts-help"),
+            highchartOutput(ns("sentiment_counts"))
+          )
         )
       )
+    )
+  )
+}
+
+notesModuleHelp <- function(id) {
+  ns <- NS(id)
+  
+  help_defs <- list(
+    list(
+      id = ns("year-help"),
+      help = "Select the year range of the UFO sightings"
     ),
-    h2("haha", id = "one")
+    list(
+      id = ns("filter_continent-help"),
+      help = "Filter the UFO sightings by the continent of occurrence"
+    ),
+    list(
+      id = ns("filter_shape-help"),
+      help = "Filter the UFO sightings by the shape of the seen object"
+    ),
+    list(
+      id = ns("wordcloud-help"),
+      help = "Some UFO sighting records have free-text notes linked to them. 
+        Based on the selected filters above, a word cloud showing most frequent 
+        words in these notes is shown here."
+    ),
+    list(
+      id = ns("sentiment_counts-help"),
+      help = "Here the distribution of sentiments in the free-text notes is shown.
+        Click on the bars to filter the word cloud to show only words of a certain
+        sentiment. The chosen sentiment is highlighted in the bar chart."
+    )
+  )
+  
+  data.frame(
+    element = lapply(help_defs, function(x) paste0("#", x$id)) %>% unlist(),
+    intro = lapply(help_defs, function(x) x$help) %>% unlist()
   )
 }

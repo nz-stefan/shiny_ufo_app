@@ -18,19 +18,25 @@ sightsModuleUI <- function(id) {
       fluidRow(
         column(
           width = 12,
-          introBox(
-            sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%"),
-            data.step = 1, data.intro = "lala"
+          div(
+            id = ns("year-help"),
+            sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%")
+          )
+        ),
+        column(
+          width = 6,
+          div(
+            id = ns("filter_continent-help"),
+            uiOutput(ns("filter_continent")) %>% withSpinner(type = 3, color.background = "white")
+          )
+        ),
+        column(
+          width = 6,
+          div(
+            id = ns("filter_shape-help"),
+            uiOutput(ns("filter_shape")) %>% withSpinner(type = 3, color.background = "white")
           )
           
-        ),
-        column(
-          width = 6,
-          uiOutput(ns("filter_continent")) %>% withSpinner(type = 3, color.background = "white")
-        ),
-        column(
-          width = 6,
-          uiOutput(ns("filter_shape")) %>% withSpinner(type = 3, color.background = "white")
         )
       )
     ),
@@ -39,6 +45,7 @@ sightsModuleUI <- function(id) {
     # Info boxes --------------------------------------------------------------
     
     div(
+      id = ns("totals-help"),
       fluidRow(
         infoBoxOutput(ns("total_sightings")),
         infoBoxOutput(ns("total_duration")),
@@ -51,6 +58,7 @@ sightsModuleUI <- function(id) {
     # Map UI ------------------------------------------------------------------
     
     div(
+      id = ns("map-help"),
       class = "card",
       leafletOutput(ns("map"), height = 300) %>% withSpinner(type = 3, color.background = "white")
     ),
@@ -125,8 +133,41 @@ sightsModuleUI <- function(id) {
       )
     ),
     
-    h3("lalalala", id = "two"),
-
     receiveSweetAlert(messageId = ns("msg_too_many_items"))
+  )
+}
+
+sightsModuleHelp <- function(id) {
+  ns <- NS(id)
+  
+  help_defs <- list(
+    list(
+      id = ns("year-help"),
+      help = "Select the year range of the UFO sightings"
+    ),
+    list(
+      id = ns("filter_continent-help"),
+      help = "Filter the UFO sightings by the continent of occurrence"
+    ),
+    list(
+      id = ns("filter_shape-help"),
+      help = "Filter the UFO sightings by the shape of the seen object"
+    ),
+    list(
+      id = ns("totals-help"),
+      help = "These boxes show some basic counts of the filtered UFO sightings"
+    ),
+    list(
+      id = ns("map-help"),
+      help = "The map shows the locations of the UFO sightings. The sightings may be
+        clustered. Click on the clusters or zoom into the map to reveal the exact 
+        locations of a sighting. Click on a sighting to show details. Use the mouse 
+        wheel to zoom and drag the mouse to navigate in the map."
+    )
+  )
+  
+  data.frame(
+    element = lapply(help_defs, function(x) paste0("#", x$id)) %>% unlist(),
+    intro = lapply(help_defs, function(x) x$help) %>% unlist()
   )
 }

@@ -8,7 +8,9 @@
 
 # Header ------------------------------------------------------------------
 
-db_header <- dashboardHeader(disable = F, title = "UFO Sightings", tags$li(class = "dropdown", actionButton("lal", "H")))
+db_header <- dashboardHeader(
+  title = "UFO Sightings", 
+  tags$li(class = "dropdown", actionButton("intro", "Help", icon = icon("question-circle"), class = "btn-help")))
 
 
 # Sidebar -----------------------------------------------------------------
@@ -30,8 +32,6 @@ db_body <- dashboardBody(
   # include shinyjs globally (must be included once only)
   useShinyjs(),
   introjsUI(),
-  
-  actionButton("intro", "Intro"),
   
   # add CSS customizations
   tags$head(

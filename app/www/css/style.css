@@ -22,6 +22,26 @@
 }
 
 
+/** Help button **************************************************************/
+
+.btn-help, .btn-help:hover, .btn-help:focus, .btn-help:active {
+  color: white;
+  background-color: Transparent;
+  background-repeat: no-repeat;
+  border: none;
+  cursor:pointer;
+  overflow: hidden;
+  outline: none;
+  padding: 1px;
+  margin-top: 10px;
+  margin-right: 20px;
+}
+
+.btn-help:hover {
+  color: #EEEEEE;
+}
+
+
 /** Material design cards ****************************************************/
 
 .card {
