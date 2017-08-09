@@ -20,7 +20,7 @@ notesModuleUI <- function(id) {
           width = 12,
           div(
             id = ns("year-help"),
-            sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1924, 1964), sep = "", width = "100%")
+            sliderInput(ns("year"), label = "Select sighting year range", min = 1906, max = 2014, value = c(1906, 2014), sep = "", width = "100%")
           )
           
         ),

@@ -2,10 +2,10 @@ name: ufo-sightings
 title: ufo-sightings
 account: nz-stefan
 server: shinyapps.io
-appId: 199594
-bundleId: 923108
+appId: 203469
+bundleId: 934008
 url: https://nz-stefan.shinyapps.io/ufo-sightings/
-when: 1501588026.46747
+when: 1502277807.75114
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .gitkeep
