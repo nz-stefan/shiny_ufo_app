@@ -9,7 +9,6 @@
 # Module server function
 notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
   
-  
   # Initialisation ----------------------------------------------------------
   
   # obtain namespace
@@ -35,38 +34,16 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
   
   
   # Filter UI elements ------------------------------------------------------
-  
-  make_filter_ui_element <- function(variable, ui_id, ui_label) {
-    # use dplyr's new quotation feature to obtain column name
-    variable <- enquo(variable)
-    
-    # build list of choices for picker element
-    choice_list <- d.ufo_notes() %>% 
-      count(!!variable, sort = TRUE) %>% 
-      na.omit()
-    
-    # create picker element
-    pickerInput(
-      inputId = ui_id, 
-      label = ui_label, 
-      choices = choice_list %>% pull(!!variable), 
-      selected = choice_list %>% pull(!!variable),
-      choicesOpt = list(subtext = sprintf("(%s records)", format(choice_list$n, big.mark = ","))),
-      options = list(
-        `actions-box` = TRUE, 
-        `live-search` = TRUE, 
-        `live-search-placeholder` = "Type to search",
-        `selected-text-format` = "count > 5"), 
-      multiple = TRUE)
-  }
-  
+
   output$filter_continent <- renderUI({
-    make_filter_ui_element(continent, ns("continent"), "Select continent")
-  })  
-  
+    d.ufo_notes() %>% 
+      make_filter_ui_element(continent, ns("continent"), "Select continent")
+  })
+
   output$filter_shape <- renderUI({
-    make_filter_ui_element(shape, ns("shape"), "Select UFO shape")
-  })  
+    d.ufo_notes() %>% 
+      make_filter_ui_element(shape, ns("shape"), "Select UFO shape")
+  })
   
   
   # Wordcloud -----------------------------------------------------------------
@@ -95,6 +72,7 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
   output$sentiment_counts <- renderHighchart({
     req(nrow(d.notes_filtered()) > 0)
 
+    # if no sentiment was clicked yet, select a default sentiment
     clicked <- if(!is.null(input$hcClicked)) input$hcClicked else "positive"
 
     # count UFO sightings by sentiment
@@ -106,6 +84,7 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
       mutate(col = "#0099C6") %>% 
       mutate(col = ifelse(sentiment == clicked, "#FF9900", col))
 
+    # define javascript callback function to respond to click events in the bar chart
     callback_func <- JS("function(event) {Shiny.onInputChange('notes_module-hcClicked', event.point.name);}")
     
     hchart(d, "bar", hcaes(x = sentiment, y = n, color = col)) %>% 
@@ -116,7 +95,7 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
       hc_tooltip(enabled = FALSE) %>% 
       hc_plotOptions(
         series = list(color = "#990099"),
-        bar = list(events = list(click = callback_func))
+        bar = list(events = list(click = callback_func))  # add click event callback here
       ) %>% 
       hc_add_theme(
         hc_theme_merge(
@@ -125,6 +104,4 @@ notesModule <- function(input, output, session, conf = NULL, constants = NULL) {
         )
       )
   })
-  
-  observeEvent(input$intro_btn, introjs(session))
 }

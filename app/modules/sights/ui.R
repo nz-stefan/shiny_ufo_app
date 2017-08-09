@@ -70,43 +70,55 @@ sightsModuleUI <- function(id) {
       fluidRow(
         column(
           width = 2,
-          radioGroupButtons(
-            ns("table_view"),
-            label = NULL,
-            choices = c(
-              `<i class='fa fa-bar-chart'></i>` = "chart",
-              `<i class='fa fa-table'></i>` = "table"
-            ),
-            selected = "chart",
-            size = "xs"
+          div(
+            id = ns("table_view-help"),
+            radioGroupButtons(
+              ns("table_view"),
+              label = NULL,
+              choices = c(
+                `<i class='fa fa-bar-chart'></i>` = "chart",
+                `<i class='fa fa-table'></i>` = "table"
+              ),
+              selected = "chart",
+              size = "xs"
+            )
           )
         ),
         column(
           width = 10,
-          pickerInput(
-            ns("date_plot_column"),
-            label = NULL,
-            choices = c("Total observations" = "obs_total", "Observations by continent" = "obs_by_continent"),
-            selected = "obs_total",
-            multiple = FALSE,
-            width = "auto",
-            options = list(style = "btn-chart")
+          div(
+            id = ns("date_plot_column-help"),
+            pickerInput(
+              ns("date_plot_column"),
+              label = NULL,
+              choices = c("Total observations" = "obs_total", "Observations by continent" = "obs_by_continent"),
+              selected = "obs_total",
+              multiple = FALSE,
+              width = "auto",
+              options = list(style = "btn-chart")
+            )
           ),
           style = "text-align: right"
         ),
         column(
           width = 12,
-          uiOutput(ns("date_plot_ui"))
+          div(
+            id = ns("date_plot_ui-help"),
+            uiOutput(ns("date_plot_ui"))
+          )
         ),
         column(
           width = 12,
-          awesomeRadio(
-            ns("date_plot_dimension"),
-            label = NULL, #"Select time dimension",
-            choices = c("year" = "year", "month" = "month", "weekday" = "day_of_week", "hour" = "hour_of_day"),
-            selected = "year",
-            status = "success",
-            inline = TRUE
+          div(
+            id = ns("date_plot_dimension-help"),
+            awesomeRadio(
+              ns("date_plot_dimension"),
+              label = NULL, #"Select time dimension",
+              choices = c("year" = "year", "month" = "month", "weekday" = "day_of_week", "hour" = "hour_of_day"),
+              selected = "year",
+              status = "success",
+              inline = TRUE
+            )
           ),
           style = "text-align: right;"
         )
@@ -120,15 +132,27 @@ sightsModuleUI <- function(id) {
       fluidRow(
         column(
           width = 4,
-          highchartOutput(ns("summary_shape"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+          div(
+            id = ns("summary_shape-help"),
+            highchartOutput(ns("summary_shape"), height = 250) %>% 
+              withSpinner(type = 3, color.background = "white")
+          )
         ),
         column(
           width = 4,
-          highchartOutput(ns("summary_duration"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+          div(
+            id = ns("summary_duration-help"),
+            highchartOutput(ns("summary_duration"), height = 250) %>% 
+              withSpinner(type = 3, color.background = "white")
+          )
         ),
         column(
           width = 4,
-          highchartOutput(ns("summary_country"), height = 250) %>% withSpinner(type = 3, color.background = "white")
+          div(
+            id = ns("summary_country-help"),
+            highchartOutput(ns("summary_country"), height = 250) %>% 
+              withSpinner(type = 3, color.background = "white")
+          )
         )
       )
     ),
@@ -163,6 +187,38 @@ sightsModuleHelp <- function(id) {
         clustered. Click on the clusters or zoom into the map to reveal the exact 
         locations of a sighting. Click on a sighting to show details. Use the mouse 
         wheel to zoom and drag the mouse to navigate in the map."
+    ),
+    list(
+      id = ns("table_view-help"),
+      help = "Switch between a chart and a table view of the data"
+    ),
+    list(
+      id = ns("date_plot_column-help"),
+      help = "Select which variable to plot. You can choose either 'Total Observations'
+        or 'Total Observations by Continent'."
+    ),
+    list(
+      id = ns("date_plot_ui-help"),
+      help = "Here appears either a chart or a table showing UFO observations by either
+        year, month, day of week or hour."
+    ),
+    list(
+      id = ns("date_plot_dimension-help"),
+      help = "Select by which variable to aggregate the observations by, i.e. either
+        year, month, day of week or hour."
+    ),
+    list(
+      id = ns("summary_shape-help"),
+      help = "Chart showing the number of UFO observations by shape"
+    ),
+    list(
+      id = ns("summary_duration-help"),
+      help = "Chart showing the distrubution of the duration of UFO observations"
+    ),
+    list(
+      id = ns("summary_country-help"),
+      help = "Chart showing the number of UFO observations by country. 
+        Only the 10 most countries are shown."
     )
   )
   

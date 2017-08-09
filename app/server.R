@@ -22,6 +22,7 @@ shinyServer(
     callModule(notesModule, "notes_module")
     # callModule(salesModule, "sales_module", conf, constants)
     
+    # handle help messages
     observeEvent(input$intro, {
       if (input$tabs == "start") {
         rintrojs::introjs(session, options = list(
@@ -37,4 +38,5 @@ shinyServer(
         ))
       }
     })
-  })
+  }
+)

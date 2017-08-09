@@ -21,7 +21,8 @@ library(rintrojs)
 
 # Load utilities ----------------------------------------------------------
 
-source("utils.R")
+source("utils/ui-utils.R")
+source("utils/filter.R")
 
 
 # Load modules ------------------------------------------------------------

@@ -24,21 +24,22 @@
 
 /** Help button **************************************************************/
 
-.btn-help, .btn-help:hover, .btn-help:focus, .btn-help:active {
-  color: white;
-  background-color: Transparent;
+.btn-help, .btn-help:active:focus {
+  color: white !important;
+  box-shadow: none;
+  background-color: Transparent !important;
   background-repeat: no-repeat;
-  border: none;
+  border: none !important;
   cursor:pointer;
   overflow: hidden;
   outline: none;
-  padding: 1px;
+  padding: 5px 10px;
   margin-top: 10px;
   margin-right: 20px;
 }
 
 .btn-help:hover {
-  color: #EEEEEE;
+  color: #EEEEEE !important;
 }
 
 

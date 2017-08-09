@@ -52,38 +52,16 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
   
   
   # Filter UI elements ------------------------------------------------------
-  
-  make_filter_ui_element <- function(variable, ui_id, ui_label) {
-    # use dplyr's new quotation feature to obtain column name
-    variable <- enquo(variable)
-    
-    # build list of choices for picker element
-    choice_list <- d.ufo() %>% 
-      count(!!variable, sort = TRUE) %>% 
-      na.omit()
-    
-    # create picker element
-    pickerInput(
-      inputId = ui_id, 
-      label = ui_label, 
-      choices = choice_list %>% pull(!!variable), 
-      selected = choice_list %>% pull(!!variable),
-      choicesOpt = list(subtext = sprintf("(%s records)", format(choice_list$n, big.mark = ","))),
-      options = list(
-        `actions-box` = TRUE, 
-        `live-search` = TRUE, 
-        `live-search-placeholder` = "Type to search",
-        `selected-text-format` = "count > 5"), 
-      multiple = TRUE)
-  }
 
   output$filter_continent <- renderUI({
-    make_filter_ui_element(continent, ns("continent"), "Select continent")
-  })  
-
+    d.ufo() %>% 
+      make_filter_ui_element(continent, ns("continent"), "Select continent")
+  })
+  
   output$filter_shape <- renderUI({
-    make_filter_ui_element(shape, ns("shape"), "Select UFO shape")
-  })  
+    d.ufo() %>% 
+      make_filter_ui_element(shape, ns("shape"), "Select UFO shape")
+  })
   
   
   # Map ---------------------------------------------------------------------
@@ -309,6 +287,4 @@ sightsModule <- function(input, output, session, conf = NULL, constants = NULL) 
       icon = icon("globe"),
       color = "purple")
   })
-  
-  observeEvent(input$intro_btn, introjs(session))
 }
